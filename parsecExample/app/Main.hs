@@ -1,19 +1,18 @@
 module Main where
 
-import Parser
+import PrologParser
 import System.IO
+import Text.ParserCombinators.Parsec
+import System.Environment
 
+parseString :: Parser a -> String -> Either ParseError a
+parseString p =
+  parse (do r <- p; eof; return r) ""
 
-runParser :: String -> IO ()
-runParser str =
-  case parseString str of
-    Left err -> print err
-    Right r -> print r
-
-parseFromFile :: FilePath -> IO ()
-parseFromFile path = do
+parseFromFile' :: FilePath -> IO ()
+parseFromFile' path = do
   input <- readFile path
-  case parseString input of
+  case parseString prog input of
     Left err -> print err
     Right r -> do
       writeFile (path ++ ".out") (show r)
@@ -21,16 +20,5 @@ parseFromFile path = do
 
 main :: IO ()
 main = do
-  putStrLn ""
-
-  runParser "13"
-  runParser "42"
-  runParser "007"
-  runParser "a"
-  runParser "(a+13)*42"
-  runParser "a+13*42"
-  runParser "1^2^3^4"
-  runParser "a+2^3*4"
-
-  writeFile "input.txt" "a+2^3*4"
-  parseFromFile "input.txt"
+  filename <- getArgs 
+  parseFromFile' (head filename)
